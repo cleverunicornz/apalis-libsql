@@ -3,14 +3,14 @@
 use std::{fmt, marker::PhantomData, pin::Pin};
 
 use apalis_core::{
-    backend::{codec::Codec, Backend, BackendExt},
+    backend::{Backend, BackendExt, codec::Codec},
     error::BoxDynError,
     layers::Stack,
     task::Task,
     worker::{context::WorkerContext, ext::ack::AcknowledgeLayer},
 };
 pub use apalis_sql::context::SqlContext;
-use futures::{stream::BoxStream, FutureExt, Stream, StreamExt};
+use futures::{FutureExt, Stream, StreamExt, stream::BoxStream};
 use libsql::Database;
 use pin_project::pin_project;
 use ulid::Ulid;
@@ -212,7 +212,7 @@ pub async fn reenqueue_orphaned(
         .map_err(LibsqlError::Database)?;
 
     if rows > 0 {
-        tracing::info!("Re-enqueued {} orphaned tasks", rows);
+        log::info!("Re-enqueued {} orphaned tasks", rows);
     }
 
     Ok(rows)

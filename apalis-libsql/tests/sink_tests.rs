@@ -2,8 +2,8 @@
 
 use apalis_core::task::Task;
 use apalis_libsql::{
-    sink::{push_tasks, LibsqlSink},
     CompactType, Config, SqlContext,
+    sink::{LibsqlSink, push_tasks},
 };
 use futures::Sink;
 use libsql::Builder;

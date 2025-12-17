@@ -3,12 +3,12 @@
 use apalis_core::{
     error::{AbortError, BoxDynError},
     layers::Service,
-    task::{status::Status, Task},
+    task::{Task, status::Status},
     worker::{context::WorkerContext, ext::ack::Acknowledge},
 };
 use apalis_libsql::{
-    ack::{calculate_status, LibsqlAck, LockTaskLayer},
     CompactType, LibsqlError, SqlContext,
+    ack::{LibsqlAck, LockTaskLayer, calculate_status},
 };
 use libsql::Builder;
 use std::sync::Arc;

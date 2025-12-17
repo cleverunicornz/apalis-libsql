@@ -92,7 +92,7 @@ impl TryFrom<LibsqlTaskRow> for TaskRow {
                 .and_then(|res| match serde_json::from_str(res) {
                     Ok(result) => Some(result),
                     Err(e) => {
-                        tracing::warn!("Failed to parse last_error JSON: {}", e);
+                        log::warn!("Failed to parse last_error JSON: {}", e);
                         None
                     }
                 }),
@@ -110,7 +110,7 @@ impl TryFrom<LibsqlTaskRow> for TaskRow {
                 .and_then(|m| match serde_json::from_str(m) {
                     Ok(meta) => Some(meta),
                     Err(e) => {
-                        tracing::warn!("Failed to parse metadata JSON: {}", e);
+                        log::warn!("Failed to parse metadata JSON: {}", e);
                         None
                     }
                 }),

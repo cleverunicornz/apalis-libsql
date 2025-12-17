@@ -4,7 +4,7 @@ use apalis_core::{
     backend::{Backend, BackendExt},
     worker::context::WorkerContext,
 };
-use apalis_libsql::{enable_wal_mode, LibsqlStorage};
+use apalis_libsql::{LibsqlStorage, enable_wal_mode};
 use futures::StreamExt;
 use libsql::Builder;
 use std::{sync::Arc, time::Duration};
@@ -49,7 +49,7 @@ async fn test_storage_new() {
     // Verify storage properties
     assert_eq!(storage.db() as *const _, db as *const _); // Should reference same database
     assert_eq!(storage.config().buffer_size(), 10); // Default buffer size
-                                                    // The default queue name is derived from the type name, which is "()" for unit type
+    // The default queue name is derived from the type name, which is "()" for unit type
     assert_eq!(storage.config().queue().to_string(), "()"); // Default queue name for unit type
 }
 

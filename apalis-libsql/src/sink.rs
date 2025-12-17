@@ -7,13 +7,13 @@ use std::{
 };
 
 use futures::{
-    future::{BoxFuture, Shared},
     FutureExt, Sink,
+    future::{BoxFuture, Shared},
 };
 use libsql::Database;
 use ulid::Ulid;
 
-use crate::{config::Config, CompactType, LibsqlError, LibsqlTask};
+use crate::{CompactType, LibsqlError, LibsqlTask, config::Config};
 
 /// SQL query to insert a new task
 const INSERT_SQL: &str = r#"
@@ -90,19 +90,19 @@ pub async fn push_tasks(
     cfg: &Config,
     buffer: Vec<LibsqlTask<CompactType>>,
 ) -> Result<(), Arc<LibsqlError>> {
-    tracing::debug!("push_tasks called with {} tasks", buffer.len());
+    log::debug!("push_tasks called with {} tasks", buffer.len());
     let conn = db
         .connect()
         .map_err(|e| Arc::new(LibsqlError::Database(e)))?;
 
     // Use transaction for batch insert
-    tracing::debug!("Starting transaction");
+    log::debug!("Starting transaction");
     conn.execute("BEGIN", libsql::params![])
         .await
         .map_err(|e| Arc::new(LibsqlError::Database(e)))?;
 
     for (i, task) in buffer.iter().enumerate() {
-        tracing::debug!("Processing task {}", i);
+        log::debug!("Processing task {}", i);
         let id = task
             .parts
             .task_id
@@ -116,7 +116,7 @@ pub async fn push_tasks(
         let meta =
             serde_json::to_string(&task.parts.ctx.meta()).unwrap_or_else(|_| "{}".to_string());
 
-        tracing::debug!("Executing INSERT with id: {}, job_type: {}", id, job_type);
+        log::debug!("Executing INSERT with id: {}, job_type: {}", id, job_type);
         match conn
             .execute(
                 INSERT_SQL,
@@ -125,31 +125,31 @@ pub async fn push_tasks(
             .await
         {
             Ok(rows_affected) => {
-                tracing::debug!(
+                log::debug!(
                     "INSERT executed successfully, rows affected: {}",
                     rows_affected
                 );
                 if rows_affected != 1 {
-                    tracing::warn!("INSERT affected {} rows instead of 1", rows_affected);
+                    log::warn!("INSERT affected {} rows instead of 1", rows_affected);
                 }
             }
             Err(e) => {
-                tracing::error!("INSERT failed: {:?}", e);
+                log::error!("INSERT failed: {:?}", e);
                 // Try to rollback
                 if let Err(rollback_err) = conn.execute("ROLLBACK", libsql::params![]).await {
-                    tracing::error!("Failed to rollback transaction: {:?}", rollback_err);
+                    log::error!("Failed to rollback transaction: {:?}", rollback_err);
                 }
                 return Err(Arc::new(LibsqlError::Database(e)));
             }
         }
     }
 
-    tracing::debug!("Committing transaction");
+    log::debug!("Committing transaction");
     conn.execute("COMMIT", libsql::params![])
         .await
         .map_err(|e| Arc::new(LibsqlError::Database(e)))?;
 
-    tracing::debug!("push_tasks completed successfully");
+    log::debug!("push_tasks completed successfully");
     Ok(())
 }
 

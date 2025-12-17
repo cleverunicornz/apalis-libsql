@@ -343,14 +343,24 @@ async fn bench_summary() -> Result<(), Box<dyn std::error::Error>> {
     // Note: Individual benchmarks are separate tests and should be run individually
     // This summary just provides the header format expected in the contract
     println!("Run individual benchmarks with:");
-    println!("cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_raw_write_iops");
-    println!("cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_batched_write_throughput");
+    println!(
+        "cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_raw_write_iops"
+    );
+    println!(
+        "cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_batched_write_throughput"
+    );
     println!(
         "cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_read_iops"
     );
-    println!("cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_concurrent_reads");
-    println!("cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_transaction_tps");
-    println!("cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_mixed_workload");
+    println!(
+        "cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_concurrent_reads"
+    );
+    println!(
+        "cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_transaction_tps"
+    );
+    println!(
+        "cargo test --test perf_test --release -- --nocapture --test-threads=1 bench_mixed_workload"
+    );
 
     println!("\n============================================");
 

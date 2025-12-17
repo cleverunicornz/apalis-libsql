@@ -10,12 +10,12 @@ use std::{
 
 use apalis_core::{task::Task, worker::context::WorkerContext};
 use apalis_sql::{context::SqlContext, from_row::TaskRow};
-use futures::{future::BoxFuture, stream::Stream, FutureExt};
+use futures::{FutureExt, future::BoxFuture, stream::Stream};
 use libsql::Database;
 use pin_project::pin_project;
 use ulid::Ulid;
 
-use crate::{config::Config, row::LibsqlTaskRow, CompactType, LibsqlError, LibsqlTask};
+use crate::{CompactType, LibsqlError, LibsqlTask, config::Config, row::LibsqlTaskRow};
 
 /// SQL query to fetch the next batch of tasks (atomic lock via UPDATE ... RETURNING)
 const FETCH_NEXT_SQL: &str = r#"
@@ -146,7 +146,7 @@ impl<Decode: Send + 'static> Stream for LibsqlPollFetcher<Decode> {
                     }
                 },
 
-                StreamState::Fetch(ref mut fut) => {
+                StreamState::Fetch(fut) => {
                     match fut.poll_unpin(cx) {
                         Poll::Pending => return Poll::Pending,
                         Poll::Ready(result) => match result {
@@ -163,7 +163,7 @@ impl<Decode: Send + 'static> Stream for LibsqlPollFetcher<Decode> {
                             Err(e) => {
                                 // Log the error and transition to delay state for retry
                                 // Stream continues running even after errors (they transition to Delay state)
-                                tracing::error!("Error fetching tasks: {}", e);
+                                log::error!("Error fetching tasks: {}", e);
                                 let delay = tokio::time::sleep(this.config.poll_interval());
                                 this.state = StreamState::Delay(Box::pin(delay));
                                 return Poll::Ready(Some(Err(e)));
@@ -172,13 +172,14 @@ impl<Decode: Send + 'static> Stream for LibsqlPollFetcher<Decode> {
                     }
                 }
 
-                StreamState::Buffered(ref mut buffer) => {
+                StreamState::Buffered(buffer) => {
                     if let Some(task) = buffer.pop_front() {
                         if buffer.is_empty() {
                             this.state = StreamState::Ready;
                         }
                         return Poll::Ready(Some(Ok(Some(task))));
                     } else {
+                        // Buffer is empty, transition back to ready state
                         this.state = StreamState::Ready;
                     }
                 }

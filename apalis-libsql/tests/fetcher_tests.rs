@@ -2,8 +2,8 @@
 
 use apalis_core::worker::context::WorkerContext;
 use apalis_libsql::{
-    fetcher::{fetch_next, LibsqlPollFetcher},
     Config,
+    fetcher::{LibsqlPollFetcher, fetch_next},
 };
 use futures::StreamExt;
 use libsql::Builder;
