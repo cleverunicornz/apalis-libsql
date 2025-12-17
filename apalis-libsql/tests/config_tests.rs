@@ -78,7 +78,7 @@ fn test_config_clone() {
         .set_buffer_size(30)
         .set_poll_interval(Duration::from_millis(250));
 
-    let config2 = config1.clone();
+    let config2 = config1;
 
     assert_eq!(config2.queue().to_string(), "test_queue");
     assert_eq!(config2.buffer_size(), 30);

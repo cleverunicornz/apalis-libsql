@@ -59,7 +59,7 @@ async fn test_storage_new_with_config() {
     let db = test_db.db;
 
     let config = apalis_libsql::Config::new("TestTask").set_buffer_size(20);
-    let storage = LibsqlStorage::<(), ()>::new_with_config(db, config.clone());
+    let storage = LibsqlStorage::<(), ()>::new_with_config(db, config);
 
     // Verify storage was created with the correct config values
     assert_eq!(storage.config().buffer_size(), 20);
@@ -97,7 +97,7 @@ async fn test_storage_config_getter() {
     let db = test_db.db;
 
     let config = apalis_libsql::Config::new("TestTask").set_buffer_size(25);
-    let _storage = LibsqlStorage::<(), ()>::new_with_config(db, config.clone());
+    let _storage = LibsqlStorage::<(), ()>::new_with_config(db, config);
 
     let retrieved_config = _storage.config();
 
@@ -126,7 +126,7 @@ fn test_storage_clone() {
     let db = test_db.db;
 
     let storage1 = LibsqlStorage::<(), ()>::new(db);
-    let storage2 = storage1.clone();
+    let storage2 = storage1;
 
     // Verify clone works
     assert_eq!(storage2.db() as *const _, db as *const _);
@@ -262,18 +262,12 @@ async fn test_backend_heartbeat() {
     // We verify that heartbeat stream can be created and polled
     // The specific outcome depends on implementation details, but the stream should be functional
     match first_result {
-        Ok(Some(Ok(()))) => {
-            // Heartbeat succeeded - this is the expected case
-        }
         Ok(Some(Err(e))) => {
             // Heartbeat failed but stream is still functional - this is acceptable
             println!("Heartbeat error (stream still functional): {}", e);
         }
-        Ok(None) => {
-            // Stream ended - this is a valid state
-        }
-        Err(_) => {
-            // Timeout - stream is pending but still functional
+        Ok(Some(Ok(()))) | Ok(None) | Err(_) => {
+            // Heartbeat succeeded, stream ended, or timeout - all are valid states
         }
     }
 

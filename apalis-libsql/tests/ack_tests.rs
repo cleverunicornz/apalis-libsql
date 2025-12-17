@@ -260,7 +260,7 @@ async fn test_ack_task_not_found() {
 
     match error {
         LibsqlError::Other(msg) => assert!(msg.contains("Task not found")),
-        _ => panic!("Expected Other error"),
+        LibsqlError::Database(_) => panic!("Expected Other error"),
     }
 }
 
@@ -293,7 +293,7 @@ async fn test_ack_task_not_locked() {
 
     match error {
         LibsqlError::Other(msg) => assert!(msg.contains("Task is not locked by any worker")),
-        _ => panic!("Expected Other error"),
+        LibsqlError::Database(_) => panic!("Expected Other error"),
     }
 }
 
@@ -466,7 +466,7 @@ async fn test_lock_task_not_found() {
 
     match error {
         LibsqlError::Other(msg) => assert!(msg.contains("Task not found or already locked")),
-        _ => panic!("Expected Other error"),
+        LibsqlError::Database(_) => panic!("Expected Other error"),
     }
 }
 
@@ -506,7 +506,7 @@ async fn test_lock_task_already_locked_by_other() {
 
     match error {
         LibsqlError::Other(msg) => assert!(msg.contains("Task not found or already locked")),
-        _ => panic!("Expected Other error"),
+        LibsqlError::Database(_) => panic!("Expected Other error"),
     }
 }
 
@@ -632,14 +632,14 @@ async fn test_acknowledge_trait_missing_task_id() {
     let mut task = Task::new(CompactType::new());
     task.parts.ctx = ctx;
     task.parts.task_id = None;
-    let parts = &task.parts;
+    let parts = task.parts;
 
     let result: Result<String, BoxDynError> = Ok("success".to_string());
     let error = ack.ack(&result, &parts).await.unwrap_err();
 
     match error {
         LibsqlError::Other(msg) => assert!(msg.contains("Missing task_id for ack")),
-        _ => panic!("Expected Other error"),
+        LibsqlError::Database(_) => panic!("Expected Other error"),
     }
 }
 
@@ -656,14 +656,14 @@ async fn test_acknowledge_trait_missing_lock_by() {
     let mut task = Task::new(CompactType::new());
     task.parts.ctx = ctx;
     task.parts.task_id = Some(apalis_core::task::task_id::TaskId::new(task_id));
-    let parts = &task.parts;
+    let parts = task.parts;
 
     let result: Result<String, BoxDynError> = Ok("success".to_string());
     let error = ack.ack(&result, &parts).await.unwrap_err();
 
     match error {
         LibsqlError::Other(msg) => assert!(msg.contains("Missing worker_id (lock_by)")),
-        _ => panic!("Expected Other error"),
+        LibsqlError::Database(_) => panic!("Expected Other error"),
     }
 }
 
@@ -859,7 +859,7 @@ async fn test_lock_task_service_poll_ready() {
     // Wrap with LockTaskLayer - this tests that the layer can be created
     use apalis_core::layers::Layer;
     let layer = LockTaskLayer::new(db);
-    let _lock_task_service = layer.layer(mock_service.clone());
+    let _lock_task_service = layer.layer(mock_service);
 
     // Test that the service can be created and used
     // The main test is that we can create the layer and service without compilation errors

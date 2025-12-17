@@ -289,7 +289,6 @@ async fn test_sink_clone_does_not_copy_buffer() {
 
     // Verify the original sink has a task in buffer by checking debug output
     // We need to drop the pinned sink first to avoid borrowing conflicts
-    drop(pinned_sink);
     let debug_str1 = format!("{:?}", sink1);
     assert!(
         debug_str1.contains("buffer_len: 1"),

@@ -122,12 +122,9 @@ async fn test_fetcher_clone() {
     // Both should be able to poll without panicking (independent state)
     // We don't care about the specific results, just that both can be polled
     match (poll1, poll2) {
-        (Ok(_), Ok(_)) => {
-            // Both polls completed successfully - clone works independently
-        }
-        _ => {
-            // At least one poll timed out or had an error, but that's acceptable
-            // The important thing is that both fetchers could be polled without crashing
+        (Ok(_), Ok(_)) | (Ok(_), Err(_)) | (Err(_), Ok(_)) | (Err(_), Err(_)) => {
+            // All combinations are acceptable - both fetchers could poll successfully
+            // or at least one timed out, but both fetchers could be polled without crashing
         }
     }
 }
