@@ -16,16 +16,31 @@ Native libSQL storage backend for [Apalis](https://github.com/geofmureithi/apali
 
 ## Performance
 
-Real benchmarks on standard hardware:
+Benchmarks run on bare metal (not containerized):
+
+| Spec | Value |
+|------|-------|
+| CPU | AMD Ryzen 9 5950X (16-core, 4.6GHz) |
+| RAM | 128GB DDR4 |
+| Storage | Samsung MZQL2 NVMe (enterprise SSD) |
+| OS | Linux (bare metal) |
+
+**Results:**
 
 ```text
-Raw write IOPS:     ~117K/sec  (single INSERTs)
-Batched writes:     ~578K/sec  (transaction batching)
+Raw write IOPS:     ~117K/sec  (single INSERTs, worst case)
+Batched writes:     ~578K/sec  (transaction batching, best case)
 Read IOPS:          ~272K/sec  (primary key lookups)
 Transaction TPS:    ~78K/sec   (BEGIN/UPDATE x2/COMMIT)
 ```
 
-Run benchmarks: `cargo test --test perf_test --release -- --nocapture`
+**What this means:**
+- Your mileage will vary based on hardware
+- NVMe storage is critical for write performance
+- These are local SQLite numbers, not network-bound Turso Cloud
+- Containerized/VM performance will be lower
+
+Run your own benchmarks: `cargo test --test perf_test --release -- --nocapture`
 
 ## Architecture
 
